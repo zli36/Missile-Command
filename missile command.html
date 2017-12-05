@@ -1,0 +1,440 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Missile command</title>
+		<script src="js/Three.js"></script>
+		<script src="js/tween.min.js"></script>
+		<h2>Your score is :  <span id="myText"></span></h2>
+
+		<audio id="myAudio">
+				<source src="horse.ogg" type="audio/ogg">
+		</audio>
+
+		<style type="text/css">
+			div#canvas-frame {
+				border: none;
+				cursor: pointer;
+				width: 100%;
+				height: 600px;
+				background-color: #EEEEEE;
+				background-image:url(https://github.com/zli36/prog3/blob/gh-pages/sky.jpg);
+			}
+
+		</style>
+		<script>
+            var renderer;
+            var vid = document.getElementById("myAudio");
+            var score = 0;
+            function initThree() {
+                width = document.getElementById('canvas-frame').clientWidth;
+                height = document.getElementById('canvas-frame').clientHeight;
+                //console.log("width" + width);
+                //console.log("height" + height);
+                renderer = new THREE.WebGLRenderer({
+                    antialias : true
+                });
+                renderer.setSize(width, height);
+                document.getElementById('canvas-frame').appendChild(renderer.domElement);
+                renderer.setClearColor(0xFFFFFF, 1.0);
+
+                document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+            }
+
+            var camera;
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                camera.position.x = 0;
+                camera.position.y = 0;
+                camera.position.z = 600;
+                camera.up.x = 0;
+                camera.up.y = 1;
+                camera.up.z = 0;
+                camera.lookAt({
+                    x : 0,
+                    y : 0,
+                    z : 0
+                });
+            }
+
+            var scene;
+            function initScene() {
+                scene = new THREE.Scene();
+            }
+
+            function initBackground() {
+                // Load texture
+                var loader = new THREE.TextureLoader();
+                loader.crossOrigin = true;
+
+                var texture = loader.load(
+                    'https://ncsucgclass.github.io/prog3/sky.jpg',
+                    onTextureLoad,
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                    },
+                    function (xhr) {
+                        console.log('An error happened');
+                    }
+                );
+
+                function onTextureLoad(texture) {
+                    //console.log(texture);
+                    var geometry = new THREE.PlaneGeometry(1300, 1000, 0);
+                    var material = new THREE.MeshBasicMaterial({
+                        map: texture
+                    });
+                    var backgroundMesh = new THREE.Mesh(geometry, material);
+
+                    // The background plane shouldn't care about the z-buffer.
+                    backgroundMesh.material.depthTest = true;
+                    backgroundMesh.material.depthWrite = true;
+                    backgroundMesh.position.z = -5;
+                    scene.add(backgroundMesh);
+                    //render();
+                }
+            }
+
+            var light;
+            function initLight() {
+                light = new THREE.AmbientLight(0xFF0000);
+                light.position.set(100, 100, 200);
+                scene.add(light);
+				
+                light = new THREE.PointLight(0x00FF00);
+                light.position.set(0, 0,300);
+                scene.add(light);
+            }
+
+			var meshBuffer = [];
+            var existBuffer = [];
+			var index = 0;
+
+			var debugnumber = 0;
+
+            function initObject() {
+
+                var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+                var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+
+                var mesh = new THREE.Mesh( geometry,material);
+                mesh.position = new THREE.Vector3(-300,0,0);
+                var xLoc = getRandomArbitrary(-300,300);
+                mesh.position.set(xLoc,220,0);
+
+                scene.add(mesh);
+                meshBuffer.push(mesh);
+                //console.log(debugnumber + " position " + mesh.position.x + " " + mesh.position.y);
+                //debugnumber++;
+                existBuffer.push(true);
+            }
+
+            function getRandomArbitrary(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+
+			var cityBuffer = [];
+            function initCity() {
+
+                var geometry0 = new THREE.CubeGeometry(5000,50,500);
+                var material0 = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+                var mesh0 = new THREE.Mesh(geometry0, material0);
+                mesh0.position = new THREE.Vector3(-300,-220,0);
+                mesh0.position.set(0,-240,0);
+                scene.add(mesh0);
+
+                var geometry = new THREE.CubeGeometry(50,50,50);
+                var material = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position = new THREE.Vector3(-300,-220,0);
+                mesh.position.set(-300,-205,0);
+                scene.add(mesh);
+                cityBuffer.push(mesh);
+
+                var geometry2 = new THREE.CubeGeometry(50,50,50);
+                var material2 = new THREE.MeshBasicMaterial( {color: 0x654321} );
+                var mesh2 = new THREE.Mesh(geometry2, material2);
+                mesh2.position = new THREE.Vector3(-300,-220,0);
+                mesh2.position.set(0,-205,0);
+                scene.add(mesh2);
+                cityBuffer.push(mesh2);
+
+                var geometry3 = new THREE.CubeGeometry(50,50,50);
+                var material3 = new THREE.MeshBasicMaterial( {color: 0x145671} );
+                var mesh3 = new THREE.Mesh(geometry3, material3);
+                mesh3.position = new THREE.Vector3(-300,-220,0);
+                mesh3.position.set(300,-205,0);
+                scene.add(mesh3);
+                cityBuffer.push(mesh3);
+
+                var geometry4 = new THREE.CubeGeometry(30,30,50);
+                var material4 = new THREE.MeshBasicMaterial( {color: 0x145671} );
+                var mesh4 = new THREE.Mesh(geometry4, material4);
+                mesh4.position = new THREE.Vector3(-300,-220,0);
+                mesh4.position.set(-225,-210,0);
+                scene.add(mesh4);
+                cityBuffer.push(mesh4);
+
+                var geometry5 = new THREE.CubeGeometry(30,30,50);
+                var material5 = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh5 = new THREE.Mesh(geometry5, material5);
+                mesh5.position = new THREE.Vector3(-300,-220,0);
+                mesh5.position.set(-150,-200,0);
+                scene.add(mesh5);
+                cityBuffer.push(mesh5);
+
+                var geometry6 = new THREE.CubeGeometry(30,30,50);
+                var material6 = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh6 = new THREE.Mesh(geometry6, material6);
+                mesh6.position = new THREE.Vector3(-300,-220,0);
+                mesh6.position.set(-75,-210,0);
+                scene.add(mesh6);
+                cityBuffer.push(mesh6);
+
+                var geometry7 = new THREE.CubeGeometry(30,30,50);
+                var material7 = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh7 = new THREE.Mesh(geometry7, material7);
+                mesh7.position = new THREE.Vector3(-300,-220,0);
+                mesh7.position.set(75,-210,0);
+                scene.add(mesh7);
+                cityBuffer.push(mesh7);
+
+                var geometry8 = new THREE.CubeGeometry(30,30,50);
+                var material8 = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh8 = new THREE.Mesh(geometry8, material8);
+                mesh8.position = new THREE.Vector3(-300,-220,0);
+                mesh8.position.set(150,-200,0);
+                scene.add(mesh8);
+                cityBuffer.push(mesh8);
+
+                var geometry9 = new THREE.CubeGeometry(30,30,50);
+                var material9 = new THREE.MeshBasicMaterial( {color: 0x123456} );
+                var mesh9 = new THREE.Mesh(geometry9, material9);
+                mesh9.position = new THREE.Vector3(-300,-220,0);
+                mesh9.position.set(225,-210,0);
+                scene.add(mesh9);
+                cityBuffer.push(mesh9);
+
+            }
+
+
+
+            var missileBuffer = [];
+            var missileIndex = 0;
+            var missileTarget = [];
+            function onDocumentMouseDown( event ) {
+                //console.log("tested");
+                // event.preventDefault();
+                //  x_pos = (event.clientX-400)/125 * 100;//small window
+                //  y_pos = (-event.clientY+300)/125 * 100;//small window
+
+                x_pos = (event.clientX - 680)/120 * 100
+                y_pos = (-event.clientY + 350)/120 * 100
+
+				console.log(x_pos + " " + y_pos + " estimated");
+                console.log(event.clientX + " " + event.clientY);
+                z_pos = 0;
+
+                var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+                var material = new THREE.MeshBasicMaterial( {color: 0x00ffff} );
+
+                var missileObject = new THREE.Mesh( geometry,material);
+                missileObject.position = new THREE.Vector3(-300,0,0);
+                var startIndex = getRandomInt(0,cityBuffer.length - 1);
+                missileObject.position.set(cityBuffer[startIndex].position.x,cityBuffer[startIndex].position.y,0);
+
+                //missileTarget[missileIndex].position = new THREE.Vector3(-300,0,0);
+                //missileTarget[missileIndex].position.set(x_pos,y_pos,z_pos);
+                scene.add(missileObject);
+                missileBuffer.push(missileObject);
+                //console.log(missileObject.position);
+
+                // missileTarget[missileIndex] = new THREE.Vector3(x_pos,y_pos,z_pos);
+                missileTarget[missileIndex] = new THREE.Vector3(x_pos,y_pos,0);
+
+                //console.log(x_pos + " " + y_pos);
+                // var vector = new THREE.Vector3(x_pos, y_pos, z_pos);
+                //
+                // var projector = new THREE.Projector();
+                // projector.unprojectVector(vector, camera);
+                // var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+                // var intersects = raycaster.intersectObjects(intersectObjects);
+                //
+                // if (intersects.length > 0) {
+                //
+                //     xp = intersects[0].point.x.toFixed(2);
+                //     yp = intersects[0].point.y.toFixed(2);
+                //     zp = intersects[0].point.z.toFixed(2);
+                //     destination = new THREE.Vector3(xp, yp, zp);
+                //
+                //     radians = Math.atan2((driller.position.x - xp), (driller.position.z - zp));
+                //     radians += 90 * (Math.PI / 180);
+                //     console.log(radians);
+                //
+                //     var tween = new TWEEN.Tween(driller.rotation).to({y: radians}, 200).easing(TWEEN.Easing.Linear.None).start();
+                //
+                // }
+
+
+                initMissile();
+				missileIndex++;
+            }
+
+
+            function threeStart() {
+
+                initThree();
+                initBackground();
+                initCamera();
+                initScene();
+                initLight();
+                initCity();
+                initObject();
+				initTween();
+                animation();
+
+            }
+
+
+
+			function initTween()
+			{
+			    if(cityBuffer.length <= 0) {
+			        //console.log("you failed");
+			        document.alert("Failed");
+			        return;
+				}
+
+			    var whichCity = getRandomInt(0,cityBuffer.length - 1);
+				var index = meshBuffer.length - 1;
+			    var cuMissile = meshBuffer[index];
+				var tween = new TWEEN.Tween( cuMissile.position)
+						.to( { x: cityBuffer[whichCity].position.x, y:cityBuffer[whichCity].position.y }, 20000 ).start();
+				
+				tween.onComplete(function () {
+				    if(existBuffer[index] == true) {
+						for(var i = 0; i < cityBuffer.length; i++) {
+                            //console.log("delete city" + calculateDistance(cityBuffer[i].position,cuMissile.position) );
+						    if(calculateDistance(cityBuffer[i].position,meshBuffer[index].position) < 900) {
+						        //if(existBuffer[index] == true)
+									//console.log(index);
+						        scene.remove(cityBuffer[i]);
+						        //console.log("dlege city");
+								//console.log( " location " + meshBuffer[index].position.x + " " + meshBuffer[index].position.y);
+						        cityBuffer.splice(i,1);
+							}
+						}
+					}
+					else {
+				        existBuffer.splice(index,1);
+				        //console.log("remove" + index);
+				        meshBuffer.splice(index,1);
+					}
+					scene.remove(cuMissile);
+                });
+
+			}
+
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+            }
+
+			function initMissile() {
+                //console.log("score " + score);
+                document.getElementById("myText").innerHTML = score;
+                var curMissile = missileBuffer[missileIndex];
+
+                var tween = new TWEEN.Tween( curMissile.position)
+					.to( { x:missileTarget[missileIndex].x, y: missileTarget[missileIndex].y },1000 );
+                tween.start();
+                tween.onComplete(function () {
+                    //console.log("mesh length" + meshBuffer.length);
+                    for(var i = 0; i < meshBuffer.length; i++) {
+                       // console.log("ondelete" + calculateDistance(meshBuffer[i].position,curMissile.position));
+						if(calculateDistance(meshBuffer[i].position,curMissile.position)< 900)
+						{
+						    if(existBuffer[i] == true) score += 10;
+							existBuffer[i] = false;
+                            scene.remove(meshBuffer[i]);
+                            vid.play();
+						}
+					}
+
+					for(var i = 0; i < planeBuffer.length; i++) {
+                        if(calculateDistance(planeBuffer[i].position, curMissile.position) < 900) {
+                            if(existPlane[i] == true) score += 30;
+                            scene.remove(planeBuffer[i]);
+                            existPlane[i] = false;
+
+						}
+					}
+
+
+                    scene.remove(curMissile);
+                });
+
+            }
+
+            function calculateDistance(missileA, missileB) {
+				return (missileA.x -missileB.x) * (missileA.x -missileB.x) + (missileA.y - missileB.y) * (missileA.y - missileB.y);
+            }
+
+            var planeBuffer = [];
+            var existPlane = [];
+            function generatePlane() {
+                var geometry = new THREE.CubeGeometry(30,30,50);
+                var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position = new THREE.Vector3(-300,-220,0);
+                mesh.position.set(-500,0,0);
+                scene.add(mesh);
+                planeBuffer.push(mesh);
+                existPlane.push(true);
+
+                initPlane();
+            }
+
+            function  initPlane() {
+
+                var tween = new TWEEN.Tween( planeBuffer[planeBuffer.length - 1].position)
+                    .to( { x:1000, y: 100 },5000 ).start();
+
+
+            }
+
+
+
+            function animation()
+            {
+                // if(meshBuffer.length	 < 10)
+				// {
+				    if(Math.random() > 0.99) {
+
+                        index++;
+                        initObject();
+                        initTween();
+                       // console.log(index);
+					}
+
+					if(Math.random() > 0.995) {
+				        generatePlane();
+					}
+				//}
+
+                renderer.render(scene, camera);
+                requestAnimationFrame(animation);
+
+				TWEEN.update();
+            }
+
+		</script>
+	</head>
+
+	<body onload="threeStart();">
+		<div></div>
+		<div id="canvas-frame"></div>
+	</body>
+</html>
